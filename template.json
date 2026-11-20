@@ -1,0 +1,235 @@
+{
+  "name": "Convex Self-Hosted Backend + Dashboard (Postgres 18)",
+  "idSeed": "Convex Self-Hosted Backend + Dashboard (Postgres 18)",
+  "description": "Reactive TypeScript backend with dashboard, on Postgres 18.",
+  "category": "Other",
+  "tags": [
+    "convex",
+    "backend",
+    "database",
+    "realtime",
+    "typescript",
+    "baas",
+    "postgres",
+    "self-hosted"
+  ],
+  "image": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/convex.svg",
+  "upstream": {
+    "repo": "get-convex/convex-backend",
+    "version": "9fde7cb10083b101c27cd99a83553ce59d7b2034 (precompiled-2026-11-19)",
+    "image": "ghcr.io/convex/convex-backend:9fde7cb10083b101c27cd99a83553ce59d7b2034@sha256:1e64c93ce0a6cff9b039d7fb38b81ad0bccedf80072736a8412a622730c86115",
+    "checked": "2026-11-20"
+  },
+  "services": {
+    "Convex Backend": {
+      "icon": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/convex.svg",
+      "source": {
+        "repo": "baranberkay96/convex-railway",
+        "rootDirectory": "/services/backend"
+      },
+      "startCommand": null,
+      "preDeployCommand": null,
+      "healthcheckPath": "/version",
+      "healthcheckTimeout": 600,
+      "restartPolicyType": "ALWAYS",
+      "restartPolicyMaxRetries": null,
+      "numReplicas": 1,
+      "cronSchedule": null,
+      "publicDomain": true,
+      "targetPort": 3210,
+      "tcpProxy": null,
+      "volume": {
+        "mountPath": "/convex/data"
+      },
+      "variables": {
+        "PORT": {
+          "defaultValue": "3210",
+          "description": "Convex API port (public domain target and healthcheck). HTTP actions are served under /http on the same port.",
+          "required": false
+        },
+        "CONVEX_CLOUD_ORIGIN": {
+          "defaultValue": "https://${{RAILWAY_PUBLIC_DOMAIN}}",
+          "description": "Public URL of the Convex API (CONVEX_SELF_HOSTED_URL / VITE_CONVEX_URL in your app). Change it when you add a custom domain.",
+          "required": false
+        },
+        "CONVEX_SITE_ORIGIN": {
+          "defaultValue": "https://${{RAILWAY_PUBLIC_DOMAIN}}/http",
+          "description": "Public URL of HTTP actions (Convex Auth callbacks, webhooks).",
+          "required": false
+        },
+        "INSTANCE_NAME": {
+          "defaultValue": "convex-self-hosted",
+          "description": "Instance name; also part of the admin key and the Postgres database name (dashes become underscores). Keep it unless you create that database.",
+          "required": false
+        },
+        "INSTANCE_SECRET": {
+          "defaultValue": "${{secret(64, \"abcdef0123456789\")}}",
+          "description": "Instance secret (64 hex characters). Generated; the admin key is derived from it. Changing it invalidates every admin key.",
+          "required": false
+        },
+        "POSTGRES_URL": {
+          "defaultValue": "${{Postgres.CONVEX_POSTGRES_URL}}",
+          "description": "Postgres server over the private network (no database name: Convex adds it).",
+          "required": false
+        },
+        "DO_NOT_REQUIRE_SSL": {
+          "defaultValue": "1",
+          "description": "Allow the private-network Postgres connection without verified TLS.",
+          "required": false
+        },
+        "CONVEX_LOG_ADMIN_KEY": {
+          "defaultValue": "true",
+          "description": "Print the admin key in the deploy log at start. Set false once you have stored it.",
+          "required": false
+        },
+        "DISABLE_BEACON": {
+          "defaultValue": "true",
+          "description": "Do not send the anonymous self-hosted usage beacon to Convex.",
+          "required": false
+        },
+        "DOCUMENT_RETENTION_DELAY": {
+          "defaultValue": "172800",
+          "description": "Seconds of document history kept (2 days, upstream self-hosted default).",
+          "required": false
+        },
+        "DISABLE_METRICS_ENDPOINT": {
+          "defaultValue": "true",
+          "description": "Keep the Prometheus /metrics endpoint off on the public domain.",
+          "required": false
+        },
+        "RUST_LOG": {
+          "defaultValue": "info",
+          "description": "Backend log level.",
+          "required": false
+        },
+        "RAILWAY_DEPLOYMENT_DRAINING_SECONDS": {
+          "defaultValue": "15",
+          "description": "Time to finish requests on redeploy.",
+          "required": false
+        }
+      }
+    },
+    "Convex Dashboard": {
+      "icon": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/convex.svg",
+      "source": {
+        "image": "ghcr.io/convex/convex-dashboard:9fde7cb10083b101c27cd99a83553ce59d7b2034@sha256:85c1726baa1cb10bfdce9cb2ed40a116effa001487e6eb32efe2c1063b776756"
+      },
+      "startCommand": null,
+      "preDeployCommand": null,
+      "healthcheckPath": "/",
+      "healthcheckTimeout": 300,
+      "restartPolicyType": "ON_FAILURE",
+      "restartPolicyMaxRetries": 10,
+      "numReplicas": 1,
+      "cronSchedule": null,
+      "publicDomain": true,
+      "targetPort": 6791,
+      "tcpProxy": null,
+      "volume": null,
+      "variables": {
+        "PORT": {
+          "defaultValue": "6791",
+          "description": "Dashboard port.",
+          "required": false
+        },
+        "HOSTNAME": {
+          "defaultValue": "0.0.0.0",
+          "description": "Listen address of the dashboard server.",
+          "required": false
+        },
+        "NEXT_PUBLIC_DEPLOYMENT_URL": {
+          "defaultValue": "https://${{Convex Backend.RAILWAY_PUBLIC_DOMAIN}}",
+          "description": "Backend the dashboard manages. Login needs the admin key from the backend's deploy log.",
+          "required": false
+        }
+      }
+    },
+    "Postgres": {
+      "icon": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/postgresql.svg",
+      "source": {
+        "image": "ghcr.io/railwayapp-templates/postgres-ssl:18"
+      },
+      "startCommand": null,
+      "preDeployCommand": null,
+      "healthcheckPath": null,
+      "healthcheckTimeout": null,
+      "restartPolicyType": "ON_FAILURE",
+      "restartPolicyMaxRetries": 10,
+      "numReplicas": 1,
+      "cronSchedule": null,
+      "publicDomain": false,
+      "targetPort": null,
+      "tcpProxy": null,
+      "volume": {
+        "mountPath": "/var/lib/postgresql/data"
+      },
+      "variables": {
+        "POSTGRES_USER": {
+          "defaultValue": "postgres",
+          "description": "Database superuser.",
+          "required": false
+        },
+        "POSTGRES_PASSWORD": {
+          "defaultValue": "${{ secret(32, \"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ\") }}",
+          "description": "Database password (generated).",
+          "required": false
+        },
+        "POSTGRES_DB": {
+          "defaultValue": "convex_self_hosted",
+          "description": "Database created on the first start; Convex uses the database named after INSTANCE_NAME (dashes become underscores).",
+          "required": false
+        },
+        "PGDATA": {
+          "defaultValue": "/var/lib/postgresql/data/pgdata",
+          "description": "Data directory inside the volume.",
+          "required": false
+        },
+        "PGHOST": {
+          "defaultValue": "${{RAILWAY_PRIVATE_DOMAIN}}",
+          "description": "Private hostname of this database.",
+          "required": false
+        },
+        "PGPORT": {
+          "defaultValue": "5432",
+          "description": "Database port.",
+          "required": false
+        },
+        "PGUSER": {
+          "defaultValue": "${{POSTGRES_USER}}",
+          "description": "Used by Railway's Data tab.",
+          "required": false
+        },
+        "PGPASSWORD": {
+          "defaultValue": "${{POSTGRES_PASSWORD}}",
+          "description": "Used by Railway's Data tab.",
+          "required": false
+        },
+        "PGDATABASE": {
+          "defaultValue": "${{POSTGRES_DB}}",
+          "description": "Used by Railway's Data tab.",
+          "required": false
+        },
+        "DATABASE_URL": {
+          "defaultValue": "postgresql://${{PGUSER}}:${{POSTGRES_PASSWORD}}@${{RAILWAY_PRIVATE_DOMAIN}}:5432/${{PGDATABASE}}",
+          "description": "Private connection URL of the Convex database.",
+          "required": false
+        },
+        "RAILWAY_DEPLOYMENT_DRAINING_SECONDS": {
+          "defaultValue": "60",
+          "description": "Lets Postgres shut down cleanly on redeploy.",
+          "required": false
+        },
+        "SSL_CERT_DAYS": {
+          "defaultValue": "820",
+          "description": "SSL certificate expiry in days.",
+          "required": false
+        },
+        "CONVEX_POSTGRES_URL": {
+          "defaultValue": "postgresql://${{PGUSER}}:${{POSTGRES_PASSWORD}}@${{RAILWAY_PRIVATE_DOMAIN}}:5432",
+          "description": "Server URL without a database name, the form the Convex backend expects.",
+          "required": false
+        }
+      }
+    }
+  }
+}
