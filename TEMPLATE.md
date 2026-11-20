@@ -34,8 +34,8 @@ FSL-1.1-Apache-2.0. Permitted Purpose = anything but a Competing Use (offering C
 ### Convex Backend
 - Source: repo `baranberkay96/convex-railway`, `/services/backend` (official image + `convex-railway.sh`).
 - Public domain → 3210; HTTP actions on the same domain under `/http` (the backend forwards `/http/*` to its site proxy, `LocalConfig::site_forward_prefix`). Healthcheck `/version` (600 s). Restart ALWAYS (survives Postgres starting later). Volume `/convex/data` (credentials, files, modules, search indexes, tmp).
-- Wrapper: invalid `INSTANCE_SECRET` → ignored, stored/new secret used (Rule 8.29); invalid `INSTANCE_NAME` → default; `POSTGRES_URL` with a database path is trimmed to the server part; admin key printed when `CONVEX_LOG_ADMIN_KEY=true`.
-- Postgres: `POSTGRES_URL=${{Postgres.CONVEX_POSTGRES_URL}}` (no database name); database `convex_self_hosted` = `INSTANCE_NAME` with underscores, created by Postgres' `POSTGRES_DB` on first start. `DO_NOT_REQUIRE_SSL=1` (private network; the Railway image's certificate is self-signed).
+- Wrapper: `POSTGRES_URL` trimmed to the server part (query kept), `sslmode=disable` added when `DO_NOT_REQUIRE_SSL` is set; invalid `INSTANCE_SECRET` → ignored, stored/new secret used (Rule 8.29); invalid `INSTANCE_NAME` → default; admin key printed when `CONVEX_LOG_ADMIN_KEY=true`.
+- Postgres: `POSTGRES_URL=${{Postgres.CONVEX_POSTGRES_URL}}` (no database name); database `convex_self_hosted` = `INSTANCE_NAME` with underscores, created by Postgres' `POSTGRES_DB` on first start. `DO_NOT_REQUIRE_SSL=1` and the wrapper appends `sslmode=disable`: Railway's `postgres-ssl` certificate is a self-signed CA used as the server certificate, which the backend's rustls rejects (`CaUsedAsEndEntity`) even with the default `sslmode=prefer` — first test deploy crash-looped on exactly that. The private network is encrypted by Railway.
 
 ### Convex Dashboard
 Pinned image, port 6791, healthcheck `/`, `NEXT_PUBLIC_DEPLOYMENT_URL` = backend public URL. No `NEXT_PUBLIC_ADMIN_KEY`: the dashboard always asks for the admin key (setting it would publish an unauthenticated admin UI).
@@ -53,7 +53,7 @@ Measured values in the round report. Plan: backend ~150–300 MB idle, dashboard
 ## Improvements over market templates
 
 1. Backend and dashboard pinned to the same commit, by digest (no drift between `latest` pulls).
-2. Postgres 18 with the Convex database created on first start.
+2. Postgres 18 with the Convex database created on first start, and a working connection to Railway's self-signed Postgres (the backend rejects that certificate under the default TLS mode).
 3. HTTPS HTTP-actions origin on the same domain (`/http`) instead of a plain-http TCP proxy.
 4. Admin key printed at start (no SSH), with a switch to stop printing it.
 5. Fail-safe handling of `INSTANCE_SECRET`, `INSTANCE_NAME`, `POSTGRES_URL` values typed into the deploy form.
