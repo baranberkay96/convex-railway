@@ -74,7 +74,7 @@
         },
         "DO_NOT_REQUIRE_SSL": {
           "defaultValue": "1",
-          "description": "Allow the private-network Postgres connection without verified TLS.",
+          "description": "Connect to Postgres over the private network without TLS (Railway's self-signed Postgres certificate is rejected by the backend). Empty = require verified TLS.",
           "required": false
         },
         "CONVEX_LOG_ADMIN_KEY": {
