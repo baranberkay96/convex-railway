@@ -1,5 +1,7 @@
 # Deploy and Host Convex with Railway
 
+[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/convex-self-hosted-backend-dashboard-pos?referralCode=20H68q)
+
 Convex is a reactive backend for TypeScript apps: a document database, server functions, scheduling, file storage and live queries in one. This community template runs the self-hosted Convex backend and its dashboard on Railway with PostgreSQL 18 as the database, a volume for files and indexes, and an admin key printed in the deploy log.
 
 ## About Hosting Convex
